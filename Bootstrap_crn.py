@@ -61,7 +61,7 @@ def block_bootstrap(data):
 
 
 @jit(nopython=True)
-def bootstrap_np_jit(data, boots=1000):
+def bootstrap_np_jit(data, boots):
     """
     Alternative bootstrap routine that works exclusively with a numpy 
     array.  Seems to offer limited performance improvement!?
@@ -69,7 +69,7 @@ def bootstrap_np_jit(data, boots=1000):
     Expense operations here are: round, random.uniform - but only to a limited
     extent!
     
-    REturns a numpy array containing the bootstrap resamples
+    Returns a numpy array containing the bootstrap resamples
     @data = numpy array of systems to boostrap
     @boots = number of bootstrap (default = 1000)
     """
@@ -84,7 +84,7 @@ def bootstrap_np_jit(data, boots=1000):
         
             for i in range(system.shape[0]):
                 
-                total += system[round(np.random.uniform(0, system.shape[0])-1)]
+                total += system[np.round_(np.random.uniform(0, system.shape[0])-1)]
 
             to_return[b, sys_index] = total / system.shape[0]
             total= 0
@@ -101,7 +101,7 @@ def bootstrap_np(data, boots=1000):
     Expense operations here are: round, random.uniform - but only to a limited
     extent!
     
-    REturns a numpy array containing the bootstrap resamples
+    Returns a numpy array containing the bootstrap resamples
     @data = numpy array of systems to boostrap
     @boots = number of bootstrap (default = 1000)
     """
@@ -116,7 +116,7 @@ def bootstrap_np(data, boots=1000):
         
             for i in range(system.shape[0]):
                 
-                total += system[round(np.random.uniform(0, system.shape[0])-1)]
+                total += system[np.round_(np.random.uniform(0, system.shape[0])-1)]
 
             to_return[b, sys_index] = total / system.shape[0]
             total= 0
@@ -216,7 +216,9 @@ def bootstrap_chance_constraint(data, threshold, boot_args, gamma=0.95, kind='lo
     
     return df_counts.loc[df_counts['pass'] == 1].index
     
-    
+  
+   
+   
 def indifferent(x, indifference):
     """
     convert numbers to 0 or 1
@@ -231,10 +233,9 @@ def indifferent(x, indifference):
         return 0
     
 
-def stage1_output(diffs, x_1, y_1, systems, best_system_index, nboots):
+def within_x(diffs, x_1, y_1, systems, best_system_index, nboots):
     indifference = systems[best_system_index].mean() * x_1
-    df_indifference = diffs.applymap(lambda x: indifferent(x, indifference))
-    print(df_indifference.mean())
+    df_indifference = diffs.applymap(lambda x: indifferent(x, indifference))   
     threshold = nboots * y_1
     df_within_limit = df_indifference.sum(0)
     df_within_limit= pd.DataFrame(df_within_limit, columns=['sum'])
@@ -242,6 +243,7 @@ def stage1_output(diffs, x_1, y_1, systems, best_system_index, nboots):
 
 
 def bootcomp_run(systems, xlimits, ylimits, nboots, k, m, labels):
+    
     df_wait = pd.DataFrame(systems)
     
     args =  bs.BootstrapArguments()
@@ -271,9 +273,12 @@ def bootcomp_run(systems, xlimits, ylimits, nboots, k, m, labels):
 
     for x in xlimits:
         for y in ylimits:
-            optim.append([x, y, stage1_output(df_boots_diffs, x, y, feasible_systems, best_system_index, nboots).values])
+            optim.append([x, y, within_x(df_boots_diffs, x, y, feasible_systems, best_system_index, nboots).values])
     
-    return pd.DataFrame(optim, columns = ['x1', 'y1', 's1 output'])
+    return pd.DataFrame(optim, columns = ['x1', 'y1', 's1 output'])   
+   
+
+    
     
 def auto_select_parameters(results_stage1):
     df = results_stage1
@@ -289,23 +294,20 @@ def auto_select_top_m(results_stage2, m):
     
     if(df_m.shape[0] == 0):
         df_m = df.loc[df['length'] > m]
+        
+        if(df_m.shape[0] == 0):
+            df_m = df.loc[df['length'] == m - 1]   
 
     try:
-        x = df_m[-1:]['s1 output'].values[0][-m:]
+        result = df_m[-1:]['s1 output'].values[0][-m:]
     except IndexError:
-        x = np.array([0 for i in range(m)])
+        result = df_m[-1:]['s1 output'].values[0]
     finally:
-        return x
+        return result
         
 
 
-def auto_select_top_m2(results_stage2, m):
-    df = results_stage2
-    df['length'] = df['s1 output'].str.len()
-    df_m = df.loc[df['length'] == m]
 
-        
-    return df_m[-1:]['s1 output']
     
                   
                  

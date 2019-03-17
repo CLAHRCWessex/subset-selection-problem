@@ -217,9 +217,10 @@ def indifferent(x, indifference):
     1 = difference less than x
     0 = difference greater than x
     """
-    if x > 0:
-        return 1
-    elif abs(x)<= indifference:
+    #if x > 0:
+    #    print('here!!!')
+    #    return 1
+    if abs(x) <= indifference:
         return 1
     else:
         return 0

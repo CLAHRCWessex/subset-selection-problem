@@ -1,5 +1,7 @@
 # subset-selection-problem
 
+[![DOI](https://zenodo.org/badge/149442769.svg)](https://zenodo.org/badge/latestdoi/149442769)
+
 **Created by**:
 * Christine S.M Currie
 * Thomas Monks

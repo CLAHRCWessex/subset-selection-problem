@@ -1,4 +1,5 @@
 # subset-selection-problem
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/CLAHRCWessex/subset-selection-problem/HEAD)
 
 [![DOI](https://zenodo.org/badge/149442769.svg)](https://zenodo.org/badge/latestdoi/149442769)
 
